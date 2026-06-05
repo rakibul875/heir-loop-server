@@ -24,23 +24,31 @@ async function run() {
     await client.connect();
     const database = client.db("userInfo");
     const jobsCollection = database.collection("jobs");
+    const companyCollection = database.collection("company");
 
     app.get("/jobs", async (req, res) => {
       const query = {};
       if (req.query.companyId) {
         query.companyId = req.query.companyId;
       }
-      if(req.query.status){
-        query.status=req.query.status
+      if (req.query.status) {
+        query.status = req.query.status;
       }
-      const cursor= jobsCollection.find(query)
-      const result= await cursor.toArray()
-      res.send(result)
+      const cursor = jobsCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
     });
 
     app.post("/jobs", async (req, res) => {
       const job = req.body;
       const result = await jobsCollection.insertOne(job);
+      res.send(result);
+    });
+    //company post and get
+
+    app.post("/company", async (req, res) => {
+      const company = req.body;
+      const result = await companyCollection.insertOne(company);
       res.send(result);
     });
 
