@@ -46,20 +46,43 @@ async function run() {
     });
     //company post and get
 
-    app.get('/my/company',async(req,res)=>{
-      const query={}
-      if(req.query.recruiterId){
-        query.recruiterId=req.query.recruiterId
+    app.get("/my/company", async (req, res) => {
+      const query = {};
+      if (req.query.recruiterId) {
+        query.recruiterId = req.query.recruiterId;
       }
-      const result= await companyCollection.findOne(query)
-      res.send(result)
-    })
+      console.log(query);
+      const result = await companyCollection.findOne(query);
+      console.log(result);
+      res.send(result ||{});
+    });
 
     app.post("/company", async (req, res) => {
       const company = req.body;
       const result = await companyCollection.insertOne(company);
-      res.send(result);
+      res.send(result || {});
     });
+
+    // app.post("/company", async (req, res) => {
+    //   try {
+    //     const company = req.body;
+
+    //     // _id remove
+    //     const { _id, ...companyData } = company;
+
+    //     const newCompany = {
+    //       ...companyData,
+    //       createdAt: new Date(),
+    //     };
+
+    //     const result = await companyCollection.insertOne(newCompany);
+
+    //     res.send(result);
+    //   } catch (error) {
+    //     console.log(error);
+    //     res.status(500).send({ message: error.message });
+    //   }
+    // });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
