@@ -41,7 +41,11 @@ async function run() {
 
     app.post("/jobs", async (req, res) => {
       const job = req.body;
-      const result = await jobsCollection.insertOne(job);
+      const newJobs={
+        ...job,
+        createdAt:new Date() 
+      }
+      const result = await jobsCollection.insertOne(newJobs);
       res.send(result);
     });
     //company post and get
@@ -59,6 +63,10 @@ async function run() {
 
     app.post("/company", async (req, res) => {
       const company = req.body;
+      const newCompany={
+        ...company,
+        createdAt: new Date()
+      }
       const result = await companyCollection.insertOne(company);
       res.send(result || {});
     });
