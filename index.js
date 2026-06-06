@@ -67,30 +67,10 @@ async function run() {
         ...company,
         createdAt: new Date()
       }
-      const result = await companyCollection.insertOne(company);
+      const result = await companyCollection.insertOne(newCompany);
       res.send(result || {});
     });
 
-    // app.post("/company", async (req, res) => {
-    //   try {
-    //     const company = req.body;
-
-    //     // _id remove
-    //     const { _id, ...companyData } = company;
-
-    //     const newCompany = {
-    //       ...companyData,
-    //       createdAt: new Date(),
-    //     };
-
-    //     const result = await companyCollection.insertOne(newCompany);
-
-    //     res.send(result);
-    //   } catch (error) {
-    //     console.log(error);
-    //     res.status(500).send({ message: error.message });
-    //   }
-    // });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
