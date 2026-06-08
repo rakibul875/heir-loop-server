@@ -25,6 +25,7 @@ async function run() {
     const database = client.db("userInfo");
     const jobsCollection = database.collection("jobs");
     const companyCollection = database.collection("company");
+    const applicationCollection= database.collection('application')
 
     app.get("/jobs", async (req, res) => {
       const query = {};
@@ -57,6 +58,19 @@ async function run() {
       const result = await jobsCollection.insertOne(newJobs);
       res.send(result);
     });
+    //application related data
+
+    app.post('/application', async (req,res)=>{
+      const application=req.body;
+      const newApplication={
+        ...application,
+        createdAt: new Date()
+      }
+      const result= await applicationCollection.insertOne(newApplication)
+      res.send(result)
+    })
+
+
     //company post and get
 
     app.get("/my/company", async (req, res) => {
