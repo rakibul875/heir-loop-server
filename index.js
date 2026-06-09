@@ -26,6 +26,7 @@ async function run() {
     const jobsCollection = database.collection("jobs");
     const companyCollection = database.collection("company");
     const applicationCollection= database.collection('application')
+    const planCollection=database.collection('plans')
 
     app.get("/jobs", async (req, res) => {
       const query = {};
@@ -82,6 +83,16 @@ async function run() {
       res.send(result)
     })
 
+    //plans gate
+
+    app.get('/plans',async(req,res)=>{
+      const query={}
+      if(req.query.plan_id){
+        query.id=req.query.plan_id
+      }
+      const result= await planCollection.findOne(query)
+      res.send(result)
+    })
 
     //company post and get
 
