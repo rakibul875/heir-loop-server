@@ -27,6 +27,9 @@ async function run() {
     const companyCollection = database.collection("company");
     const applicationCollection= database.collection('application')
     const planCollection=database.collection('plans')
+    const subscriptionCollection=database.collection('subscription')
+    const userCollection=database.collection('user')
+    
 
     app.get("/jobs", async (req, res) => {
       const query = {};
@@ -87,11 +90,32 @@ async function run() {
 
     app.get('/plans',async(req,res)=>{
       const query={}
-      if(req.query.plan_id){
-        query.id=req.query.plan_id
+      if(req.query.planId){
+        query.id=req.query.planId
       }
+      console.log(query)
       const result= await planCollection.findOne(query)
-      res.send(result)
+      console.log(result)
+      res.send(result||{})
+    })
+    //subscription post and get
+
+
+    app.post('/subscription',async (req,res)=>{
+      const sub=req.body
+      const subInfo={
+        ...sub,
+        createdAt: new Date()
+      }
+      const result= await subscriptionCollection.insertOne(subInfo)
+      const filter={email:sub.email};
+      const updateDocument={
+        $set:{
+          plan: sub.planId
+        }
+      }
+      const updateResult= await userCollection.updateOne(filter,updateDocument)
+      res.send(updateResult)
     })
 
     //company post and get
