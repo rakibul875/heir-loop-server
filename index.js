@@ -25,11 +25,10 @@ async function run() {
     const database = client.db("userInfo");
     const jobsCollection = database.collection("jobs");
     const companyCollection = database.collection("company");
-    const applicationCollection= database.collection('application')
-    const planCollection=database.collection('plans')
-    const subscriptionCollection=database.collection('subscription')
-    const userCollection=database.collection('user')
-    
+    const applicationCollection = database.collection("application");
+    const planCollection = database.collection("plans");
+    const subscriptionCollection = database.collection("subscription");
+    const userCollection = database.collection("user");
 
     app.get("/jobs", async (req, res) => {
       const query = {};
@@ -44,87 +43,89 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/jobs/:id',async(req,res)=>{
-      const id= req.params.id
-      const query={
-        _id:new ObjectId(id)
-      }
-      const result= await jobsCollection.findOne(query)
-      res.send(result)
-    })
+    app.get("/jobs/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = {
+        _id: new ObjectId(id),
+      };
+      const result = await jobsCollection.findOne(query);
+      res.send(result);
+    });
 
     app.post("/jobs", async (req, res) => {
       const job = req.body;
-      const newJobs={
+      const newJobs = {
         ...job,
-        createdAt:new Date() 
-      }
+        createdAt: new Date(),
+      };
       const result = await jobsCollection.insertOne(newJobs);
       res.send(result);
     });
     //application related data
-    app.get('/application',async (req,res)=>{
-      const query={}
-      if(req.query.applicantId){
-        query.applicantId=req.query.applicantId;
+    app.get("/application", async (req, res) => {
+      const query = {};
+      if (req.query.applicantId) {
+        query.applicantId = req.query.applicantId;
       }
-      if(req.query.jobId){
-        query.jobId=req.query.jobId;
+      if (req.query.jobId) {
+        query.jobId = req.query.jobId;
       }
-      const cursor=applicationCollection.find(query);
-      const result= await cursor.toArray();
-      res.send(result)
-    })
+      const cursor = applicationCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
-    app.post('/application', async (req,res)=>{
-      const application=req.body;
-      const newApplication={
+    app.post("/application", async (req, res) => {
+      const application = req.body;
+      const newApplication = {
         ...application,
-        createdAt: new Date()
-      }
-      const result= await applicationCollection.insertOne(newApplication)
-      res.send(result)
-    })
+        createdAt: new Date(),
+      };
+      const result = await applicationCollection.insertOne(newApplication);
+      res.send(result);
+    });
 
     //plans gate
 
-    app.get('/plans',async(req,res)=>{
-      const query={}
-      if(req.query.planId){
-        query.id=req.query.planId
+    app.get("/plans", async (req, res) => {
+      const query = {};
+      if (req.query.planId) {
+        query.id = req.query.planId;
       }
-      console.log(query)
-      const result= await planCollection.findOne(query)
-      console.log(result)
-      res.send(result||{})
-    })
+      console.log(query);
+      const result = await planCollection.findOne(query);
+      console.log(result);
+      res.send(result || {});
+    });
     //subscription post and get
 
-
-    app.post('/subscription',async (req,res)=>{
-      const sub=req.body
-      const subInfo={
+    app.post("/subscription", async (req, res) => {
+      const sub = req.body;
+      const subInfo = {
         ...sub,
-        createdAt: new Date()
-      }
-      const result= await subscriptionCollection.insertOne(subInfo)
-      const filter={email:sub.email};
-      const updateDocument={
-        $set:{
-          plan: sub.planId
-        }
-      }
-      const updateResult= await userCollection.updateOne(filter,updateDocument)
-      res.send(updateResult)
-    })
+        createdAt: new Date(),
+      };
+      const result = await subscriptionCollection.insertOne(subInfo);
+      const filter = { email: sub.email };
+      const updateDocument = {
+        $set: {
+          plan: sub.planId,
+        },
+      };
+      const updateResult = await userCollection.updateOne(
+        filter,
+        updateDocument,
+      );
+      res.send(updateResult);
+    });
 
     //company post and get
     app.get("/company", async (req, res) => {
-      const company = req.body
-      const cursor= companyCollection.find(company);
-      const result= await cursor.toArray();
+      const company = req.body;
+      const cursor = companyCollection.find(company);
+      const result = await cursor.toArray();
       res.send(result);
-    })
+    });
 
     app.get("/my/company", async (req, res) => {
       const query = {};
@@ -134,19 +135,31 @@ async function run() {
       console.log(query);
       const result = await companyCollection.findOne(query);
       console.log(result);
-      res.send(result ||{});
+      res.send(result || {});
     });
 
     app.post("/company", async (req, res) => {
       const company = req.body;
-      const newCompany={
+      const newCompany = {
         ...company,
-        createdAt: new Date()
-      }
+        createdAt: new Date(),
+      };
       const result = await companyCollection.insertOne(newCompany);
       res.send(result || {});
     });
 
+    app.patch("/company/:id", async (req, res) => {
+      const id = req.params.id;
+      const updateData = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updateDocument = {
+        $set: {
+          status: updateData.status,
+        },
+      };
+      const result = await companyCollection.updateOne(filter, updateDocument);
+      res.send(result);
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
