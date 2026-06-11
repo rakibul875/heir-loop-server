@@ -119,6 +119,12 @@ async function run() {
     })
 
     //company post and get
+    app.get("/company", async (req, res) => {
+      const company = req.body
+      const cursor= companyCollection.find(company);
+      const result= await cursor.toArray();
+      res.send(result);
+    })
 
     app.get("/my/company", async (req, res) => {
       const query = {};
