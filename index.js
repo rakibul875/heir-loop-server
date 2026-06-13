@@ -19,6 +19,23 @@ const client = new MongoClient(uri, {
 app.use(cors());
 app.use(express.json());
 
+const logger = (req, res, next) => {
+  console.log("logger ", req.params);
+  next();
+};
+
+const verifyToken = (req, res, next) => {
+  const header = req.headers?.authorization;
+  if (!header) {
+    return res.status(401).send({ message: "Unauthorized access" });
+  }
+  const token = header.split(" ")[1];
+  if (!token) {
+    return res.status(401).send({ message: "Unauthorized access" });
+  }
+  next();
+};
+
 async function run() {
   try {
     await client.connect();
@@ -120,7 +137,7 @@ async function run() {
     });
 
     //company post and get
-    app.get("/company", async (req, res) => {
+    app.get("/company", verifyToken, async (req, res) => {
       const company = req.body;
       const cursor = companyCollection.find(company);
       const result = await cursor.toArray();
