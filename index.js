@@ -63,6 +63,13 @@ async function run() {
       next();
     };
 
+    const verifyAdmin = (req, res, next) => {
+      if (req.user?.role !== "admin") {
+        return res.status(403).send({ message: "Forbidden access" });
+      }
+      next();
+    };
+
     //jobs related data
     app.get("/jobs", async (req, res) => {
       const query = {};
@@ -186,7 +193,7 @@ async function run() {
       res.send(result || {});
     });
 
-    app.patch("/company/:id", async (req, res) => {
+    app.patch("/company/:id",logger,verifyToken,verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const updateData = req.body;
       const filter = { _id: new ObjectId(id) };
