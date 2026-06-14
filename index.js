@@ -69,6 +69,12 @@ async function run() {
       }
       next();
     };
+    const verifyRecruiter = (req, res, next) => {
+      if (req.user?.role !== "recruiter") {
+        return res.status(403).send({ message: "Forbidden access" });
+      }
+      next();
+    };
 
     //jobs related data
     app.get("/jobs", async (req, res) => {
@@ -172,10 +178,13 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/my/company", async (req, res) => {
+    app.get("/my/company", verifyToken, verifyRecruiter, async (req, res) => {
       const query = {};
       if (req.query.recruiterId) {
         query.recruiterId = req.query.recruiterId;
+        if (req.user._id.toString() !== req.query.recruiterId) {
+          return res.status(403).send({ message: "Forbidden access" });
+        }
       }
       console.log(query);
       const result = await companyCollection.findOne(query);
@@ -193,18 +202,27 @@ async function run() {
       res.send(result || {});
     });
 
-    app.patch("/company/:id",logger,verifyToken,verifyAdmin, async (req, res) => {
-      const id = req.params.id;
-      const updateData = req.body;
-      const filter = { _id: new ObjectId(id) };
-      const updateDocument = {
-        $set: {
-          status: updateData.status,
-        },
-      };
-      const result = await companyCollection.updateOne(filter, updateDocument);
-      res.send(result);
-    });
+    app.patch(
+      "/company/:id",
+      logger,
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const updateData = req.body;
+        const filter = { _id: new ObjectId(id) };
+        const updateDocument = {
+          $set: {
+            status: updateData.status,
+          },
+        };
+        const result = await companyCollection.updateOne(
+          filter,
+          updateDocument,
+        );
+        res.send(result);
+      },
+    );
 
     await client.db("admin").command({ ping: 1 });
     console.log(
