@@ -24,18 +24,6 @@ const logger = (req, res, next) => {
   next();
 };
 
-const verifyToken = (req, res, next) => {
-  const header = req.headers?.authorization;
-  if (!header) {
-    return res.status(401).send({ message: "Unauthorized access" });
-  }
-  const token = header.split(" ")[1];
-  if (!token) {
-    return res.status(401).send({ message: "Unauthorized access" });
-  }
-  next();
-};
-
 async function run() {
   try {
     await client.connect();
@@ -46,7 +34,29 @@ async function run() {
     const planCollection = database.collection("plans");
     const subscriptionCollection = database.collection("subscription");
     const userCollection = database.collection("user");
+    const sessionCollection=database.collection("session");
 
+    //verification of token
+
+    const verifyToken =async (req, res, next) => {
+      const header = req.headers?.authorization;
+      if (!header) {
+        return res.status(401).send({ message: "Unauthorized access" });
+      }
+      const token = header.split(" ")[1];
+      if (!token) {
+        return res.status(401).send({ message: "Unauthorized access" });
+      }
+      const query={token:token}
+      const session = await sessionCollection.findOne(query)
+      const userId=session?.userId
+      const userQuery={_id:userId};
+      const user=await userCollection.findOne(userQuery);
+      console.log(user)
+      next();
+    };
+
+    //jobs related data
     app.get("/jobs", async (req, res) => {
       const query = {};
       if (req.query.companyId) {
@@ -79,7 +89,7 @@ async function run() {
       res.send(result);
     });
     //application related data
-    app.get("/application", async (req, res) => {
+    app.get("/application", verifyToken, async (req, res) => {
       const query = {};
       if (req.query.applicantId) {
         query.applicantId = req.query.applicantId;
