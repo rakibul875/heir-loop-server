@@ -171,7 +171,7 @@ async function run() {
     });
 
     //company post and get
-    app.get("/company", verifyToken, async (req, res) => {
+    app.get("/company", verifyToken, verifyAdmin, async (req, res) => {
       const company = req.body;
       const cursor = companyCollection.find(company);
       const result = await cursor.toArray();
