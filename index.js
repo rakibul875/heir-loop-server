@@ -34,11 +34,11 @@ async function run() {
     const planCollection = database.collection("plans");
     const subscriptionCollection = database.collection("subscription");
     const userCollection = database.collection("user");
-    const sessionCollection=database.collection("session");
+    const sessionCollection = database.collection("session");
 
     //verification of token
 
-    const verifyToken =async (req, res, next) => {
+    const verifyToken = async (req, res, next) => {
       const header = req.headers?.authorization;
       if (!header) {
         return res.status(401).send({ message: "Unauthorized access" });
@@ -47,12 +47,19 @@ async function run() {
       if (!token) {
         return res.status(401).send({ message: "Unauthorized access" });
       }
-      const query={token:token}
-      const session = await sessionCollection.findOne(query)
-      const userId=session?.userId
-      const userQuery={_id:userId};
-      const user=await userCollection.findOne(userQuery);
-      console.log(user)
+      const query = { token: token };
+      const session = await sessionCollection.findOne(query);
+      const userId = session?.userId;
+      const userQuery = { _id: userId };
+      const user = await userCollection.findOne(userQuery);
+      req.user = user;
+      next();
+    };
+
+    const verifySeeker = (req, res, next) => {
+      if (req.user?.role !== "seeker") {
+        return res.status(403).send({ message: "Forbidden access" });
+      }
       next();
     };
 
@@ -89,10 +96,14 @@ async function run() {
       res.send(result);
     });
     //application related data
-    app.get("/application", verifyToken, async (req, res) => {
+    app.get("/application", verifyToken, verifySeeker, async (req, res) => {
       const query = {};
       if (req.query.applicantId) {
         query.applicantId = req.query.applicantId;
+        console.log(req.user, req.query.applicantId);
+        if (req.user._id.toString() !== req.query.applicantId) {
+          return res.status(403).send({ message: "Forbidden access" });
+        }
       }
       if (req.query.jobId) {
         query.jobId = req.query.jobId;
